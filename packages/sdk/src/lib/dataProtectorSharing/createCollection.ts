@@ -17,7 +17,6 @@ export const createCollection = async ({
     iexec,
     sharingContractAddress
   );
-
   try {
     let userAddress = await iexec.wallet.getAddress();
     userAddress = userAddress.toLowerCase();

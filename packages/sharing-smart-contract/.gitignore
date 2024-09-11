@@ -14,9 +14,6 @@ coverage.json
 .smart-contract-address
 .constructor-args-params
 
-# openzeppelin local-fork
-.openzeppelin/local-fork
-
 # Forge
 out
 cache_forge

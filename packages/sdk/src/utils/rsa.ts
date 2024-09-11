@@ -1,27 +1,8 @@
 import { getSavedKeyPair, storeKeyPair } from './indexedDb.js';
 
-export async function getFormattedKeyPair({
-  pemPublicKey,
-  pemPrivateKey,
-}: {
-  pemPublicKey?: string;
-  pemPrivateKey?: string;
-}) {
-  // Keypair is given, use it
-  if (pemPublicKey && pemPrivateKey) {
-    return {
-      publicKey: toBase64(pemPublicKey),
-      privateKey: pemPrivateKey,
-    };
-  }
-
-  // Get keypair from indexedDB (if available) or generate a new one
-  return getOrGenerateKeyPair();
-}
-
 export async function getOrGenerateKeyPair() {
-  let publicKey: string;
-  let privateKey: CryptoKey;
+  let publicKey;
+  let privateKey;
   const existingKeyPair = await getSavedKeyPair();
   if (existingKeyPair) {
     publicKey = existingKeyPair.keyPair.publicKey;
@@ -36,7 +17,7 @@ export async function getOrGenerateKeyPair() {
   }
   return {
     publicKey,
-    privateKey: await privateAsPem(privateKey),
+    privateKey,
   };
 }
 
@@ -75,12 +56,12 @@ export async function getCrypto() {
   };
 }
 
-async function formatPublicKeyForSMS(publicKey: CryptoKey) {
+async function formatPublicKeyForSMS(publicKey) {
   const publicKeyAsPem = await publicAsPem(publicKey);
   return toBase64(publicKeyAsPem);
 }
 
-async function publicAsPem(publicKey: CryptoKey) {
+async function publicAsPem(publicKey) {
   const { crypto } = await getCrypto();
   const publicKeyAsBuffer = await crypto.subtle.exportKey('spki', publicKey);
 
@@ -90,7 +71,7 @@ async function publicAsPem(publicKey: CryptoKey) {
   return `-----BEGIN PUBLIC KEY-----\n${body}\n-----END PUBLIC KEY-----`;
 }
 
-export async function privateAsPem(privateKey: CryptoKey) {
+export async function privateAsPem(privateKey) {
   const { crypto } = await getCrypto();
   const privateKeyAsBuffer = await crypto.subtle.exportKey('pkcs8', privateKey);
   let body = btoa(String.fromCharCode(...new Uint8Array(privateKeyAsBuffer)));

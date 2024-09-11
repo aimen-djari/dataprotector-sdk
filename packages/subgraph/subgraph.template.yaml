@@ -108,12 +108,12 @@ dataSources:
           handler: handleTransfer
         - event: ProtectedDataTransfer(address,uint256,uint256,address)
           handler: handleProtectedDataTransfer
-        - event: ProtectedDataConsumed(bytes32,address,uint8)
+        - event: ProtectedDataConsumed(indexed address,indexed address,uint8)
           handler: handleProtectedDataConsumed
         # ============================= Subscription ==============================
         - event: NewSubscription(uint256,indexed address,uint48)
           handler: handleNewSubscription
-        - event: NewSubscriptionParams(uint256,(uint72,uint40))
+        - event: NewSubscriptionParams(uint256,(uint72,uint48))
           handler: handleNewSubscriptionParams
         - event: ProtectedDataAddedForSubscription(uint256,address)
           handler: handleProtectedDataAddedForSubscription
@@ -122,7 +122,7 @@ dataSources:
         # ============================= Renting ==============================
         - event: NewRental(uint256,address,address,uint48)
           handler: handleNewRental
-        - event: ProtectedDataAddedForRenting(uint256,address,(uint72,uint40))
+        - event: ProtectedDataAddedForRenting(uint256,address,(uint72,uint48))
           handler: handleProtectedDataAddedForRenting
         - event: ProtectedDataRemovedFromRenting(uint256,address)
           handler: handleProtectedDataRemovedFromRenting

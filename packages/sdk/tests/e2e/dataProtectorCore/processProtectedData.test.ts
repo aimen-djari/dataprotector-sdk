@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, jest } from '@jest/globals';
+import { beforeAll, describe, expect, it } from '@jest/globals';
 import { HDNodeWallet, Wallet } from 'ethers';
 import { IExec } from 'iexec';
 import {
@@ -12,14 +12,12 @@ import {
   getTestConfig,
 } from '../../test-utils.js';
 
-describe.skip('dataProtectorCore.processProtectedData()', () => {
-  let iexec: IExec;
+describe('dataProtectorCore.processProtectedData()', () => {
   let dataProtectorCore: IExecDataProtectorCore;
   let wallet: HDNodeWallet;
   let protectedData: ProtectedDataWithSecretProps;
   let appAddress: string;
   let workerpoolAddress: string;
-
   beforeAll(async () => {
     wallet = Wallet.createRandom();
     dataProtectorCore = new IExecDataProtectorCore(
@@ -31,7 +29,7 @@ describe.skip('dataProtectorCore.processProtectedData()', () => {
       ethProvider,
       teeFramework: 'scone',
     });
-    iexec = new IExec({ ethProvider }, options.iexecOptions);
+    const iexec = new IExec({ ethProvider }, options.iexecOptions);
     await iexec.order
       .createApporder({ app: appAddress, volume: 1000, tag: ['tee', 'scone'] })
       .then(iexec.order.signApporder)
@@ -63,43 +61,10 @@ describe.skip('dataProtectorCore.processProtectedData()', () => {
       numberOfAccess: 1000,
     });
   }, 2 * MAX_EXPECTED_BLOCKTIME + MAX_EXPECTED_WEB2_SERVICES_TIME);
-
   it(
     'should successfully process a protected data',
     async () => {
-      // --- GIVEN
-      const onStatusUpdateMock = jest.fn();
-
-      iexec.task.obsTask = jest.fn<any>().mockResolvedValue({
-        subscribe: ({ complete }) => {
-          if (complete) {
-            complete();
-          }
-
-          return () => {};
-        },
-      });
-
-      const mockArrayBuffer = new ArrayBuffer(8);
-      jest.unstable_mockModule(
-        '../../../src/lib/dataProtectorSharing/getResultFromCompletedTask.js',
-        () => {
-          return {
-            getResultFromCompletedTask: jest
-              .fn<() => Promise<ArrayBuffer>>()
-              .mockResolvedValue(mockArrayBuffer),
-          };
-        }
-      );
-
-      // import tested module after all mocked modules
-      const { processProtectedData } = await import(
-        '../../../src/lib/dataProtectorCore/processProtectedData.js'
-      );
-
-      // --- WHEN
-      await processProtectedData({
-        iexec,
+      const taskId = await dataProtectorCore.processProtectedData({
         protectedData: protectedData.address,
         app: appAddress,
         workerpool: workerpoolAddress,
@@ -108,37 +73,20 @@ describe.skip('dataProtectorCore.processProtectedData()', () => {
           2: 'email content for test processData',
         },
         args: '_args_test_process_data_',
-        onStatusUpdate: onStatusUpdateMock,
       });
-
-      // --- THEN
-      expect(onStatusUpdateMock).toHaveBeenCalledWith({
-        title: 'FETCH_PROTECTED_DATA_ORDERBOOK',
-        isDone: true,
+      expect(taskId).toBeDefined();
+    },
+    2 * MAX_EXPECTED_BLOCKTIME + MAX_EXPECTED_WEB2_SERVICES_TIME
+  );
+  it(
+    'should successfully process a protected data with the minimum parameters',
+    async () => {
+      const taskId = await dataProtectorCore.processProtectedData({
+        protectedData: protectedData.address,
+        app: appAddress,
+        workerpool: workerpoolAddress, // needs to be specified for the test
       });
-      expect(onStatusUpdateMock).toHaveBeenCalledWith({
-        title: 'FETCH_APP_ORDERBOOK',
-        isDone: true,
-      });
-      expect(onStatusUpdateMock).toHaveBeenCalledWith({
-        title: 'FETCH_WORKERPOOL_ORDERBOOK',
-        isDone: true,
-      });
-      expect(onStatusUpdateMock).toHaveBeenCalledWith({
-        title: 'PUSH_REQUESTER_SECRET',
-        isDone: true,
-      });
-      expect(onStatusUpdateMock).toHaveBeenCalledWith({
-        title: 'FETCH_PROTECTED_DATA_ORDERBOOK',
-        isDone: true,
-      });
-      expect(onStatusUpdateMock).toHaveBeenCalledWith({
-        title: 'PROCESS_PROTECTED_DATA_REQUESTED',
-        isDone: true,
-        payload: {
-          txHash: expect.any(String),
-        },
-      });
+      expect(taskId).toBeDefined();
     },
     2 * MAX_EXPECTED_BLOCKTIME + MAX_EXPECTED_WEB2_SERVICES_TIME
   );

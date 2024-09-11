@@ -1,4 +1,5 @@
 import { gql } from 'graphql-request';
+import { toHex } from '../../../utils/data.js';
 import { GetCollectionSubscriptionsGraphQLResponse } from '../../types/graphQLTypes.js';
 import { GetCollectionSubscriptionsParams } from '../../types/index.js';
 import { SubgraphConsumer } from '../../types/internalTypes.js';
@@ -36,7 +37,7 @@ export const getCollectionSubscriptionsQuery = async ({
   const variables = {
     where: {
       subscriber: subscriberAddress || undefined,
-      collection: collectionId.toString(),
+      collection: collectionId ? toHex(collectionId) : undefined,
       endDate_gte: includePastSubscriptions
         ? undefined
         : Math.floor(new Date().getTime() / 1000),

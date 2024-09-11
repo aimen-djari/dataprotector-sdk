@@ -28,14 +28,14 @@ abstract class IExecDataProtectorModule {
   protected iexec: IExec;
 
   constructor(
-    ethProvider?: Eip1193Provider | Web3SignerProvider | string,
+    ethProvider: Eip1193Provider | Web3SignerProvider,
     options?: DataProtectorConfigOptions
   ) {
     const ipfsGateway = options?.ipfsGateway || DEFAULT_IPFS_GATEWAY;
 
     try {
       this.iexec = new IExec(
-        { ethProvider: ethProvider || 'bellecour' },
+        { ethProvider },
         {
           ipfsGatewayURL: ipfsGateway,
           ...options?.iexecOptions,

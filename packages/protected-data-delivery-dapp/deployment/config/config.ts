@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
 //hosting url
-export const HOST = 'https://bellecour.iex.ec';
+export const HOST = 'http://20.185.225.192:8545';
 
 //deployment parameters
 export const APP_NAME = 'protected-data-delivery-dapp';

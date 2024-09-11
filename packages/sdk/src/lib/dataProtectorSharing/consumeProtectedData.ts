@@ -1,8 +1,7 @@
-import { string } from 'yup';
 import { SCONE_TAG, WORKERPOOL_ADDRESS } from '../../config/config.js';
 import { WorkflowError } from '../../utils/errors.js';
 import { resolveENS } from '../../utils/resolveENS.js';
-import { getFormattedKeyPair } from '../../utils/rsa.js';
+import { getOrGenerateKeyPair } from '../../utils/rsa.js';
 import { getEventFromLogs } from '../../utils/transactionEvent.js';
 import {
   addressOrEnsSchema,
@@ -30,10 +29,6 @@ export const consumeProtectedData = async ({
   iexec = throwIfMissing(),
   sharingContractAddress = throwIfMissing(),
   protectedData,
-  app,
-  workerpool,
-  pemPublicKey,
-  pemPrivateKey,
   onStatusUpdate = () => {},
 }: IExecConsumer &
   SharingContractConsumer &
@@ -42,16 +37,6 @@ export const consumeProtectedData = async ({
     .required()
     .label('protectedData')
     .validateSync(protectedData);
-  let vApp = addressOrEnsSchema().required().label('app').validateSync(app);
-  let vWorkerpool = addressOrEnsSchema()
-    .label('workerpool')
-    .validateSync(workerpool);
-  const vPemPublicKey = string()
-    .label('pemPublicKey')
-    .validateSync(pemPublicKey);
-  const vPemPrivateKey = string()
-    .label('pemPrivateKey')
-    .validateSync(pemPrivateKey);
   const vOnStatusUpdate =
     validateOnStatusUpdateCallback<
       OnStatusUpdateFn<ConsumeProtectedDataStatuses>
@@ -59,8 +44,6 @@ export const consumeProtectedData = async ({
 
   // ENS resolution if needed
   vProtectedData = await resolveENS(iexec, vProtectedData);
-  vApp = await resolveENS(iexec, vApp);
-  vWorkerpool = await resolveENS(iexec, vWorkerpool);
 
   let userAddress = await iexec.wallet.getAddress();
   userAddress = userAddress.toLowerCase();
@@ -71,81 +54,20 @@ export const consumeProtectedData = async ({
   );
 
   //---------- Smart Contract Call ----------
-  const protectedDataDetails = await getProtectedDataDetails({
-    sharingContract,
-    protectedData: vProtectedData,
-    userAddress,
-  });
-
-  const addOnlyAppWhitelistContract = await getAppWhitelistContract(
-    iexec,
-    protectedDataDetails.addOnlyAppWhitelist
-  );
-  //---------- Pre flight check----------
-  onlyProtectedDataAuthorizedToBeConsumed(protectedDataDetails);
-  await onlyAppInAddOnlyAppWhitelist({
-    addOnlyAppWhitelistContract,
-    app: vApp,
-  });
-
-  vOnStatusUpdate({
-    title: 'FETCH_WORKERPOOL_ORDERBOOK',
-    isDone: false,
-  });
   try {
-    const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
-      workerpool: vWorkerpool || WORKERPOOL_ADDRESS,
-      app: vApp,
-      dataset: vProtectedData,
-      minTag: SCONE_TAG,
-      maxTag: SCONE_TAG,
-    });
-    const workerpoolOrder = workerpoolOrderbook.orders[0]?.order;
-    if (!workerpoolOrder) {
-      throw new WorkflowError(
-        'Could not find a workerpool order, maybe too many requests? You might want to try again later.'
-      );
-    }
-    if (workerpoolOrder.workerpoolprice > 0) {
-      throw new WorkflowError(
-        'Could not find a free workerpool order, maybe too many requests? You might want to try again later.'
-      );
-    }
-    vOnStatusUpdate({
-      title: 'FETCH_WORKERPOOL_ORDERBOOK',
-      isDone: true,
-    });
-
-    const { publicKey, privateKey } = await getFormattedKeyPair({
-      pemPublicKey: vPemPublicKey,
-      pemPrivateKey: vPemPrivateKey,
-    });
-
-    vOnStatusUpdate({
-      title: 'PUSH_ENCRYPTION_KEY',
-      isDone: false,
-    });
-    await iexec.result.pushResultEncryptionKey(publicKey, {
-      forceUpdate: true,
-    });
-    vOnStatusUpdate({
-      title: 'PUSH_ENCRYPTION_KEY',
-      isDone: true,
-    });
 
     // Make a deal
     vOnStatusUpdate({
       title: 'CONSUME_ORDER_REQUESTED',
       isDone: false,
     });
+    
     const { txOptions } = await iexec.config.resolveContractsClient();
     let tx;
     let transactionReceipt;
     try {
       tx = await sharingContract.consumeProtectedData(
         vProtectedData,
-        workerpoolOrder,
-        vApp,
         txOptions
       );
       transactionReceipt = await tx.wait();
@@ -161,49 +83,31 @@ export const consumeProtectedData = async ({
       },
     });
 
+    vOnStatusUpdate({
+      title: 'CONSUME_TASK_COMPLETED',
+      isDone: false,
+    });
+
     const specificEventForPreviousTx = getEventFromLogs(
       'ProtectedDataConsumed',
       transactionReceipt.logs,
       { strict: true }
     );
 
-    const dealId = specificEventForPreviousTx.args?.dealId;
-    const taskId = await iexec.deal.computeTaskId(dealId, 0);
-    vOnStatusUpdate({
-      title: 'CONSUME_TASK',
-      isDone: false,
-      payload: { dealId, taskId },
-    });
-
-    const taskObservable = await iexec.task.obsTask(taskId, { dealid: dealId });
-
-    await new Promise((resolve, reject) => {
-      taskObservable.subscribe({
-        next: () => {},
-        error: (err) => reject(err),
-        complete: () => resolve(undefined),
-      });
-    });
-
-    vOnStatusUpdate({
-      title: 'CONSUME_TASK',
-      isDone: true,
-      payload: { dealId, taskId },
-    });
-
-    const { result } = await getResultFromCompletedTask({
+    const { contentAsObjectURL } = await getResultFromCompletedTask({
       iexec,
-      taskId,
-      pemPrivateKey: privateKey,
+      protectedData,
       onStatusUpdate: vOnStatusUpdate,
+    });
+
+    vOnStatusUpdate({
+      title: 'CONSUME_TASK_COMPLETED',
+      isDone: true,
     });
 
     return {
       txHash: tx.hash,
-      dealId,
-      taskId,
-      result,
-      pemPrivateKey: privateKey,
+      contentAsObjectURL,
     };
   } catch (e) {
     // Try to extract some meaningful error like:

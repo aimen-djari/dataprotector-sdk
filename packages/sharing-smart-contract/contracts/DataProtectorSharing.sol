@@ -121,14 +121,17 @@ contract DataProtectorSharing is
         }
     }
 
-    function _checkAndGetConsumeProtectedDataMode(
-        address _protectedData,
+    function _checkHostProtectedData(
         IexecLibOrders_v5.WorkerpoolOrder calldata _workerpoolOrder
-    ) internal view returns (Mode) {
+    ) internal view {
         if (_workerpoolOrder.workerpoolprice > 0) {
             revert WorkerpoolOrderNotFree(_workerpoolOrder);
         }
+    }
 
+    function _getConsumeProtectedDataMode(
+        address _protectedData
+    ) internal view returns (Mode) {
         ProtectedDataDetails storage _protectedDataDetails = protectedDataDetails[_protectedData];
         uint256 collectionTokenId = _protectedDataDetails.collection;
         if (_protectedDataDetails.renters[msg.sender] >= block.timestamp) {
@@ -149,25 +152,31 @@ contract DataProtectorSharing is
      **************************************************************************/
     /// @inheritdoc IDataProtectorSharing
     function consumeProtectedData(
+        address _protectedData
+    ) external {
+        Mode _mode = _getConsumeProtectedDataMode(_protectedData);
+        emit ProtectedDataConsumed(msg.sender, _protectedData, _mode);
+    }
+
+    function hostProtectedData(
         address _protectedData,
         IexecLibOrders_v5.WorkerpoolOrder calldata _workerpoolOrder,
-        address _app
+        IexecLibOrders_v5.AppOrder calldata  _appOrder
     ) external returns (bytes32 dealid) {
-        Mode _mode = _checkAndGetConsumeProtectedDataMode(_protectedData, _workerpoolOrder);
+        _checkHostProtectedData(_workerpoolOrder);
         IexecLibOrders_v5.DatasetOrder memory _datasetOrder = _createDatasetOrder(
             _protectedData,
             address(protectedDataDetails[_protectedData].addOnlyAppWhitelist)
         );
-        IexecLibOrders_v5.AppOrder memory _appOrder = _createPreSignAppOrder(_app);
         IexecLibOrders_v5.RequestOrder memory requestOrder = _createPreSignRequestOrder(
             _protectedData,
-            _app,
+            _appOrder.app,
             _workerpoolOrder.workerpool,
             _workerpoolOrder.category
         );
 
         dealid = POCO_DELEGATE.matchOrders(_appOrder, _datasetOrder, _workerpoolOrder, requestOrder);
-        emit ProtectedDataConsumed(dealid, _protectedData, _mode);
+        emit ProtectedDataHosted(dealid, _protectedData);
     }
 
     function supportsInterface(
@@ -322,7 +331,7 @@ contract DataProtectorSharing is
         // Limiting the subscription duration of the protectedData it's a security measure
         // to prevent indefinite access by end users. This is a security to protect the
         // protectedData of collectionOwner.
-        endDate = uint48(block.timestamp) + uint48(_collectionDetails.subscriptionParams.duration);
+        endDate = uint48(block.timestamp) + _collectionDetails.subscriptionParams.duration;
         _collectionDetails.subscribers[spender] = endDate;
         _collectionDetails.lastSubscriptionExpiration = uint48(
             Math.max(endDate, _collectionDetails.lastSubscriptionExpiration)
@@ -388,7 +397,7 @@ contract DataProtectorSharing is
             revert InvalidRentingParams(_protectedData, _rentingParams);
         }
 
-        endDate = uint48(block.timestamp) + uint48(_protectedDataDetails.rentingParams.duration);
+        endDate = uint48(block.timestamp) + _protectedDataDetails.rentingParams.duration;
         _protectedDataDetails.renters[spender] = endDate;
         // Limiting the rental duration of the protectedData it's a security measure to prevent indefinite access by end users.
         // This is a security to protect the protectedData of collectionOwner.
@@ -412,7 +421,7 @@ contract DataProtectorSharing is
         _checkProtectedDataNotForSale(_protectedData);
 
         if (_rentingParams.duration == 0) {
-            revert DurationInvalid(_rentingParams.duration);
+            revert DurationInvalide(_rentingParams.duration);
         }
         _protectedDataDetails.rentingParams = _rentingParams;
         emit ProtectedDataAddedForRenting(_collectionTokenId, _protectedData, _rentingParams);

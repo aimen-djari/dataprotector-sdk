@@ -57,11 +57,13 @@ function ChooseMonetization() {
   } = useQuery({
     queryKey: ['protectedData', protectedDataAddress],
     queryFn: async () => {
+		console.log(protectedDataAddress);
       const { dataProtectorSharing } = await getDataProtectorClient();
       const protectedDatas =
         await dataProtectorSharing.getProtectedDataInCollections({
           protectedData: protectedDataAddress,
         });
+       console.log(protectedDatas);
       const protectedData = protectedDatas.protectedDataInCollection[0];
       if (!protectedData) {
         return undefined;

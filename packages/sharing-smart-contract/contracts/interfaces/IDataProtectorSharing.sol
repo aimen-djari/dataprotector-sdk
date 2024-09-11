@@ -67,11 +67,18 @@ interface IDataProtectorSharing is ICollection, ISubscription, IRental, ISale {
     /**
      * Event emitted when protected data is consumed under a specific deal, providing the unique deal ID and the mode of consumption.
      *
-     * @param dealId - The unique identifier for the deal.
      * @param protectedData - protectedData used for the deal.
      * @param mode - The mode of consumption (either subscription or renting).
      */
-    event ProtectedDataConsumed(bytes32 dealId, address protectedData, Mode mode);
+    event ProtectedDataConsumed(address indexed consumer, address indexed protectedData, Mode mode);
+
+    /**
+     * Event emitted when protected data is consumed under a specific deal, providing the unique deal ID and the mode of consumption.
+     *
+     * @param dealId - The unique identifier for the deal.
+     * @param protectedData - protectedData used for the deal.
+     */
+    event ProtectedDataHosted(bytes32 dealId, address protectedData);
 
     enum Mode {
         SUBSCRIPTION, // Indicates subscription-based consumption.
@@ -115,18 +122,27 @@ interface IDataProtectorSharing is ICollection, ISubscription, IRental, ISale {
     }
 
     /**
-     * Consume protected data by creating a deal on the iExec platform.
+     * Consume protected data .
+     *
+     * @param _protectedData The address of the protected data.
+     */
+    function consumeProtectedData(
+        address _protectedData
+    ) external;
+
+     /**
+     * Host protected data by creating a deal on the iExec platform.
      * Requires a valid subscription or rental for the protected data.
      *
      * @param _protectedData The address of the protected data.
      * @param _workerpoolOrder The workerpool order for the computation task.
-     * @param _app The address of the app that will consume the protected data.
+     * @param _appOrder The app order of the app that will consume the protected data.
      * @return The unique identifier (deal ID) of the created deal on the iExec platform.
      */
-    function consumeProtectedData(
+    function hostProtectedData(
         address _protectedData,
         IexecLibOrders_v5.WorkerpoolOrder calldata _workerpoolOrder,
-        address _app
+        IexecLibOrders_v5.AppOrder calldata  _appOrder
     ) external returns (bytes32);
 
     /**

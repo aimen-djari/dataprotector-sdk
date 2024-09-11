@@ -31,7 +31,6 @@ export function ProtectedDataPreview() {
 
   const router = useRouter();
   const hasPreviousPage = Boolean(router.history.location.state.key);
-
   const onBack = () => router.history.back();
 
   // TODO Check in cache first
@@ -57,7 +56,7 @@ export function ProtectedDataPreview() {
   });
 
   const avatarVisualBg = getAvatarVisualNumber({
-    address: protectedData?.collection.owner.id,
+    address: protectedData?.collection.owner.id as string,
   });
 
   const isDirectOwner = protectedData?.owner.id === userAddress;
@@ -168,7 +167,7 @@ export function ProtectedDataPreview() {
                     </span>
                   </Link>
                   {userAddress === protectedData.collection.owner.id && (
-                    <span className="whitespace-nowrap text-xs text-grey-400">
+                    <span className="text-xs text-grey-400">
                       (your account)
                     </span>
                   )}

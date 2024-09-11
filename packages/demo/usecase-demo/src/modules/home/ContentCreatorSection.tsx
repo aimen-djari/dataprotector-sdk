@@ -15,15 +15,21 @@ export function ContentCreatorSection({ className }: { className?: string }) {
             Unleash your creativity
           </span>
           <span className="bloc text-2xl font-extrabold">
-            Become a content creator and monetize what you own
+            Become Content Creator and monetize your voice
           </span>
         </h2>
+        <div className="mt-[60px]">
+          <Button>
+            Let's go
+            <ArrowUpRight size="20" className="-mr-1 ml-1.5" />
+          </Button>
+        </div>
       </div>
       <div className="flex flex-1 flex-col gap-y-6">
         <div className="flex items-center gap-x-6 rounded-3xl border border-grey-700 px-6 py-5 sm:px-11 sm:py-10">
           <CheckCircle className="shrink-0" size="32" />
           <span className="text-lg">
-            Choose monetization method (rent, subscription, sell)
+            Choose your monetization (rent, subscription, sell)
           </span>
         </div>
         <div className="flex items-center gap-x-6 rounded-3xl border border-grey-700 px-6 py-5 sm:px-11 sm:py-10">
@@ -34,7 +40,7 @@ export function ContentCreatorSection({ className }: { className?: string }) {
         </div>
         <div className="flex items-center gap-x-6 rounded-3xl border border-grey-700 px-6 py-5 sm:px-11 sm:py-10">
           <Key className="shrink-0" size="32" />
-          <span className="text-lg">Manage ownership and profit</span>
+          <span className="text-lg">Ownership</span>
         </div>
       </div>
     </div>

@@ -96,41 +96,51 @@ export type ConsumeProtectedDataStatuses =
   | 'FETCH_WORKERPOOL_ORDERBOOK'
   | 'PUSH_ENCRYPTION_KEY'
   | 'CONSUME_ORDER_REQUESTED'
-  | 'CONSUME_TASK'
+  | 'CONSUME_TASK_ACTIVE'
+  | 'CONSUME_TASK_ERROR'
+  | 'CONSUME_TASK_COMPLETED'
   | 'CONSUME_RESULT_DOWNLOAD'
   | 'CONSUME_RESULT_DECRYPT'
   | 'CONSUME_RESULT_COMPLETE';
 
 export type ConsumeProtectedDataParams = {
   protectedData: AddressOrENS;
-  app: AddressOrENS;
-  workerpool?: AddressOrENS;
-  pemPublicKey?: string;
-  pemPrivateKey?: string;
   onStatusUpdate?: OnStatusUpdateFn<ConsumeProtectedDataStatuses>;
 };
 
 export type ConsumeProtectedDataResponse = {
   txHash: string;
-  dealId: string;
-  taskId: string;
-  result: ArrayBuffer;
-  pemPrivateKey: string;
+  contentAsObjectURL: string;
 };
 
-export type GetResultFromCompletedTaskStatuses =
-  | 'CONSUME_RESULT_DOWNLOAD'
-  | 'CONSUME_RESULT_DECRYPT';
+export type HostProtectedDataStatuses =
+  | 'FETCH_WORKERPOOL_ORDERBOOK'
+  | 'FETCH_APP_ORDERBOOK'
+  | 'PUSH_ENCRYPTION_KEY'
+  | 'HOST_ORDER_REQUESTED'
+  | 'HOST_TASK_ACTIVE'
+  | 'HOST_TASK_ERROR';
+
+export type HostProtectedDataParams = {
+  protectedData: AddressOrENS;
+  app: AddressOrENS;
+  workerpool?: AddressOrENS;
+  onStatusUpdate?: OnStatusUpdateFn<ConsumeProtectedDataStatuses>;
+};
+
+export type HostProtectedDataResponse = {
+  txHash: string;
+  dealId: string;
+  taskId: string;
+};
 
 export type GetResultFromCompletedTaskParams = {
-  taskId: string;
-  path?: string;
-  pemPrivateKey?: string;
-  onStatusUpdate?: OnStatusUpdateFn<GetResultFromCompletedTaskStatuses>;
+  protectedData: AddressOrENS;
+  onStatusUpdate?: OnStatusUpdateFn<ConsumeProtectedDataStatuses>;
 };
 
 export type GetResultFromCompletedTaskResponse = {
-  result: ArrayBuffer;
+  contentAsObjectURL: string;
 };
 
 // ---------------------Collection Types------------------------------------
@@ -140,7 +150,7 @@ export type Collection = {
   collectionOwner: Address;
   size: number;
   latestSubscriptionExpiration: number;
-  subscriptionParams: SubscriptionParams;
+  subscriptionParams: { price: number; duration: number };
 };
 
 export type CollectionOwner = {
@@ -250,7 +260,10 @@ export type CollectionSubscription = {
     owner: {
       id: AddressOrENS;
     };
-    subscriptionParams: SubscriptionParams;
+    subscriptionParams: {
+      price: number;
+      duration: number;
+    };
   };
   subscriber: {
     id: AddressOrENS;
@@ -276,8 +289,6 @@ export type SetProtectedDataToRentingParams = {
   duration: number;
 };
 
-export type SetProtectedDataRentingParams = SetProtectedDataToRentingParams;
-
 export type RemoveProtectedDataFromRentingParams = {
   protectedData: AddressOrENS;
 };
@@ -297,7 +308,10 @@ export type ProtectedDataRental = {
   };
   creationTimestamp: number;
   endDate: number;
-  rentalParams: RentingParams;
+  rentalParams: {
+    price: number;
+    duration: number;
+  };
 };
 
 export type GetRentalsParams = {

@@ -10,7 +10,7 @@ const config: HardhatUserConfig = {
     hardhat: {},
     // modify with the dev network when the environment is ready
     bellecour: {
-      url: 'https://bellecour.iex.ec',
+      url: 'http://localhost:8545',
       gasPrice: 0,
       accounts: WALLET_PRIVATE_KEY ? [WALLET_PRIVATE_KEY] : [],
     },

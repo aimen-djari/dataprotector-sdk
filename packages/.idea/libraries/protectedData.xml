@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="protectedData">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/protected-data-delivery-dapp/tests/_test_inputs_/protectedData.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

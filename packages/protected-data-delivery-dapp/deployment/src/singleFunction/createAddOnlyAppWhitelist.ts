@@ -18,9 +18,11 @@ const createAddOnlyAppWhitelist = async (
       DATA_SHARING_ABI.default,
       signer
     );
-
+	
+	
     const addOnlyAppWhitelistRegistryAddress =
       await protectedDataSharingContract.ADD_ONLY_APP_WHITELIST_REGISTRY();
+      
 
     const addOnlyAppWhitelistRegistryContract = new Contract(
       addOnlyAppWhitelistRegistryAddress,

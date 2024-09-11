@@ -9,7 +9,7 @@ export function ImageZoom(props: ComponentProps<'img'>) {
       zoomRef.current = mediumZoom({
         background: 'black',
         scrollOffset: Infinity,
-        container: '#main-content',
+        container: '#root',
       });
     }
 

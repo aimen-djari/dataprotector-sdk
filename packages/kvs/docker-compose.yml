@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  kvs-server:
+    image: kvs-server:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    container_name: kvs-server
+    environment:
+      - NODE_ENV=production

@@ -32,7 +32,7 @@ abstract contract ManageOrders {
 
     // ---------------------ManageOrders state----------------------------------
     IExecPocoDelegate internal immutable POCO_DELEGATE;
-    bytes32 internal constant TAG = 0x0000000000000000000000000000000000000000000000000000000000000003; // [tee,scone]
+    bytes32 internal constant TAG = 0x0000000000000000000000000000000000000000000000000000000000000000; // [tee,scone]
     uint256 internal constant TRUST = 0; // No replication
     string internal _iexecResultStorageProvider;
     string internal _iexecResultStorageProxy;
@@ -156,7 +156,7 @@ abstract contract ManageOrders {
     function generateParams() private view returns (string memory) {
         return
             string.concat(
-                '{"iexec_result_encryption":true',
+                '{"iexec_result_encryption":false',
                 ',"iexec_result_storage_provider":"',
                 _iexecResultStorageProvider,
                 '","iexec_result_storage_proxy":"',

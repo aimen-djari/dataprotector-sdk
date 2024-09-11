@@ -1,0 +1,256 @@
+import { SCONE_TAG, WORKERPOOL_ADDRESS } from '../../config/config.js';
+import { WorkflowError } from '../../utils/errors.js';
+import { resolveENS } from '../../utils/resolveENS.js';
+import { getOrGenerateKeyPair } from '../../utils/rsa.js';
+import { getEventFromLogs } from '../../utils/transactionEvent.js';
+import {
+  addressOrEnsSchema,
+  throwIfMissing,
+  validateOnStatusUpdateCallback,
+} from '../../utils/validators.js';
+import {
+  ConsumeProtectedDataParams,
+  ConsumeProtectedDataResponse,
+  ConsumeProtectedDataStatuses,
+  HostProtectedDataParams,
+  HostProtectedDataResponse,
+  HostProtectedDataStatuses,
+  OnStatusUpdateFn,
+  SharingContractConsumer,
+} from '../types/index.js';
+import { getResultFromCompletedTask } from './getResultFromCompletedTask.js';
+import { getAppWhitelistContract } from './smartContract/getAddOnlyAppWhitelistContract.js';
+import { getSharingContract } from './smartContract/getSharingContract.js';
+import {
+  onlyAppInAddOnlyAppWhitelist,
+  onlyProtectedDataAuthorizedToBeConsumed,
+} from './smartContract/preflightChecks.js';
+import { getProtectedDataDetails } from './smartContract/sharingContract.reads.js';
+import {IExecConsumer} from "../types/internalTypes.js";
+
+export const hostProtectedData = async ({
+  iexec = throwIfMissing(),
+  sharingContractAddress = throwIfMissing(),
+  protectedData,
+  app,
+  workerpool,
+  onStatusUpdate = () => {},
+}: IExecConsumer &
+  SharingContractConsumer &
+  HostProtectedDataParams): Promise<HostProtectedDataResponse> => {
+  let vProtectedData = addressOrEnsSchema()
+    .required()
+    .label('protectedData')
+    .validateSync(protectedData);
+  let vApp = addressOrEnsSchema().required().label('app').validateSync(app);
+  let vWorkerpool = addressOrEnsSchema()
+    .label('workerpool')
+    .validateSync(workerpool);
+  const vOnStatusUpdate =
+    validateOnStatusUpdateCallback<
+      OnStatusUpdateFn<HostProtectedDataStatuses>
+    >(onStatusUpdate);
+
+  // ENS resolution if needed
+  vProtectedData = await resolveENS(iexec, vProtectedData);
+  vApp = await resolveENS(iexec, vApp);
+  vWorkerpool = await resolveENS(iexec, vWorkerpool);
+
+  let userAddress = await iexec.wallet.getAddress();
+  userAddress = userAddress.toLowerCase();
+
+  const sharingContract = await getSharingContract(
+    iexec,
+    sharingContractAddress
+  );
+
+  //---------- Smart Contract Call ----------
+  const protectedDataDetails = await getProtectedDataDetails({
+    sharingContract,
+    protectedData: vProtectedData,
+    userAddress,
+  });
+
+  const addOnlyAppWhitelistContract = await getAppWhitelistContract(
+    iexec,
+    protectedDataDetails.addOnlyAppWhitelist
+  );
+  
+  //---------- Pre flight check----------
+  await onlyAppInAddOnlyAppWhitelist({
+    addOnlyAppWhitelistContract,
+    app: vApp,
+  });
+
+  vOnStatusUpdate({
+    title: 'FETCH_WORKERPOOL_ORDERBOOK',
+    isDone: false,
+  });
+  try {
+    const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
+      workerpool: vWorkerpool || WORKERPOOL_ADDRESS,
+      //app: vApp,
+      //dataset: vProtectedData,
+      //minTag: SCONE_TAG,
+      //maxTag: SCONE_TAG,
+    });
+    
+    const workerpoolOrder = workerpoolOrderbook.orders[0]?.order;
+    if (!workerpoolOrder) {
+      throw new WorkflowError(
+        'Could not find a workerpool order, maybe too many requests? You might want to try again later.'
+      );
+    }
+    if (workerpoolOrder.workerpoolprice > 0) {
+      throw new WorkflowError(
+        'Could not find a free workerpool order, maybe too many requests? You might want to try again later.'
+      );
+    }
+    vOnStatusUpdate({
+      title: 'FETCH_WORKERPOOL_ORDERBOOK',
+      isDone: true,
+    });
+    
+    vOnStatusUpdate({
+    title: 'FETCH_APP_ORDERBOOK',
+    isDone: false,
+  });
+    
+    const appOrderbook = await iexec.orderbook.fetchAppOrderbook(vApp);
+    
+    const appOrder = appOrderbook.orders[0]?.order;
+    if (!appOrder) {
+      throw new WorkflowError(
+        'Could not find a app order, maybe too many requests? You might want to try again later.'
+      );
+    }
+    if (appOrder.appprice > 0) {
+      throw new WorkflowError(
+        'Could not find a free app order, maybe too many requests? You might want to try again later.'
+      );
+    }
+    
+    vOnStatusUpdate({
+    title: 'FETCH_APP_ORDERBOOK',
+    isDone: true,
+  });
+    
+    
+    const { publicKey } = await getOrGenerateKeyPair();
+    vOnStatusUpdate({
+      title: 'PUSH_ENCRYPTION_KEY',
+      isDone: false,
+    });
+    await iexec.result.pushResultEncryptionKey(publicKey, {
+      forceUpdate: true,
+    });
+    vOnStatusUpdate({
+      title: 'PUSH_ENCRYPTION_KEY',
+      isDone: true,
+    });
+    
+    // Make a deal
+    vOnStatusUpdate({
+      title: 'HOST_ORDER_REQUESTED',
+      isDone: false,
+    });
+    
+    const { txOptions } = await iexec.config.resolveContractsClient();
+    let tx;
+    let transactionReceipt;
+    try {
+		
+      tx = await sharingContract.hostProtectedData(
+        vProtectedData,
+        workerpoolOrder,
+        appOrder,
+        txOptions
+      );
+      transactionReceipt = await tx.wait();
+    } catch (err) {
+      console.error('Smart-contract hostProtectedData() ERROR', err);
+      throw err;
+    }
+    
+
+    const specificEventForPreviousTx = getEventFromLogs(
+      'ProtectedDataHosted',
+      transactionReceipt.logs,
+      { strict: true }
+    );
+    
+    // Make a deal
+    vOnStatusUpdate({
+      title: 'HOST_ORDER_REQUESTED',
+      isDone: true,
+    });
+    
+     vOnStatusUpdate({
+      title: 'HOST_TASK_ACTIVE',
+      isDone: false,
+    });
+    
+     
+
+    const dealId = specificEventForPreviousTx.args?.dealId;
+    const taskId = await iexec.deal.computeTaskId(dealId, 0);
+    
+    
+
+    const taskObservable = await iexec.task.obsTask(taskId, { dealid: dealId });
+    vOnStatusUpdate({
+      title: 'HOST_TASK_ACTIVE',
+      isDone: true,
+      payload: {
+        taskId: taskId,
+      },
+    });
+	
+	/*
+    await new Promise((resolve, reject) => {
+      taskObservable.subscribe({
+        next: () => {},
+        error: (e) => {
+          vOnStatusUpdate({
+            title: 'HOST_TASK_ERROR',
+            isDone: true,
+            payload: {
+              taskId: taskId,
+            },
+          });
+          reject(e);
+        },
+        complete: () => resolve(undefined),
+      });
+    });
+    */
+    
+
+    return {
+      txHash: tx.hash,
+      dealId,
+      taskId,
+    };
+  } catch (e) {
+    // Try to extract some meaningful error like:
+    // "insufficient funds for transfer"
+    if (e?.info?.error?.data?.message) {
+      throw new WorkflowError(
+        `Failed to host protected data: ${e.info.error.data.message}`,
+        e
+      );
+    }
+    // Try to extract some meaningful error like:
+    // "User denied transaction signature"
+    if (e?.info?.error?.message) {
+      throw new WorkflowError(
+        `Failed to consume protected data: ${e.info.error.message}`,
+        e
+      );
+    }
+    throw new WorkflowError(
+      'Sharing smart contract: Failed to consume protected data',
+      e
+    );
+  }
+};

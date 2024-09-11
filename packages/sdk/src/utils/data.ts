@@ -5,16 +5,12 @@ import {
   DataObject,
   DataSchema,
   DataSchemaEntryType,
-  LegacyScalarType,
   MimeType,
   ScalarType,
-  SearchableDataSchema,
-  SearchableSchemaEntryType,
 } from '../lib/types/index.js';
 
 const ALLOWED_KEY_NAMES_REGEXP = /^[a-zA-Z0-9\-_]*$/;
 
-const LEGACY_TYPES: LegacyScalarType[] = ['boolean', 'number', 'string'];
 const SUPPORTED_TYPES: ScalarType[] = ['bool', 'i128', 'f64', 'string'];
 
 const MIN_I128 = BigInt('-170141183460469231731687303715884105728');
@@ -48,11 +44,6 @@ const SUPPORTED_MIME_TYPES: MimeType[] = [
 const supportedDataEntryTypes = new Set<DataSchemaEntryType>([
   ...SUPPORTED_TYPES,
   ...SUPPORTED_MIME_TYPES,
-]);
-
-const searchableDataEntryTypes = new Set<SearchableSchemaEntryType>([
-  ...supportedDataEntryTypes,
-  ...LEGACY_TYPES,
 ]);
 
 const ensureKeyIsValid = (key: string) => {
@@ -97,9 +88,7 @@ export const ensureDataObjectIsValid = (data: DataObject) => {
   }
 };
 
-export const ensureSearchableDataSchemaIsValid = (
-  schema: SearchableDataSchema
-) => {
+export const ensureDataSchemaIsValid = (schema: DataSchema) => {
   if (schema === undefined) {
     throw Error(`Unsupported undefined schema`);
   }
@@ -112,22 +101,9 @@ export const ensureSearchableDataSchemaIsValid = (
   for (const key in schema) {
     ensureKeyIsValid(key);
     const value = schema[key];
-
     if (typeof value === 'object') {
-      if (Array.isArray(value)) {
-        if (value.length === 0) {
-          throw Error(`Unsupported empty type array`);
-        }
-        const unsupportedType = value.find(
-          (v) => !searchableDataEntryTypes.has(v)
-        );
-        if (unsupportedType) {
-          throw Error(`Unsupported type "${unsupportedType}" in type array`);
-        }
-      } else {
-        ensureSearchableDataSchemaIsValid(value);
-      }
-    } else if (!searchableDataEntryTypes.has(value)) {
+      ensureDataSchemaIsValid(value);
+    } else if (!supportedDataEntryTypes.has(value)) {
       throw Error(`Unsupported type "${value}" in schema`);
     }
   }
@@ -291,4 +267,8 @@ export const reverseSafeSchema = function (
     }
     return propsAndTypes;
   }, {});
+};
+
+export const toHex = (value: number): string => {
+  return '0x' + value.toString(16);
 };

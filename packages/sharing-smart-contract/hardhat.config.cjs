@@ -24,7 +24,7 @@ module.exports = {
       chainId: 134,
       forking: {
         enabled: true,
-        url: 'https://bellecour.iex.ec',
+        url: 'http://127.0.0.1:8545',
       },
     },
     'local-bellecour-fork': {

@@ -29,19 +29,16 @@ export async function storeKeyPair(publicKey: string, privateKey: CryptoKey) {
   });
 }
 
-export async function getSavedKeyPair(): Promise<
-  | {
-      keyPairName: string;
-      keyPair: { publicKey: string; privateKey: CryptoKey };
-    }
-  | undefined
-> {
+export async function getSavedKeyPair(): Promise<{
+  keyPairName: string;
+  keyPair: { publicKey: string; privateKey: SubtleCrypto };
+}> {
   if (!window || !('indexedDB' in window)) {
     return;
   }
 
   return new Promise((resolve, reject) => {
-    const openDbRequest = window.indexedDB.open('iexec-dataprotector', 1);
+    const openDbRequest = window.indexedDB.open('ContentCreator', 1);
     openDbRequest.onerror = (event) => {
       console.log('[indexedDB] openDbRequest() ERROR', event);
     };

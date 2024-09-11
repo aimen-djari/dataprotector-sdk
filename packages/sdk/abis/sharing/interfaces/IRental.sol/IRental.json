@@ -7,7 +7,7 @@
         "type": "uint48"
       }
     ],
-    "name": "DurationInvalid",
+    "name": "DurationInvalide",
     "type": "error"
   },
   {
@@ -25,9 +25,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -130,9 +130,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "indexed": false,
@@ -191,9 +191,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -227,9 +227,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",

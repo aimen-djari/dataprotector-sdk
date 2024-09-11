@@ -53,6 +53,7 @@ async function main() {
   console.log(`Proxy DataProtectorSharing address: ${proxyAddress}`);
 
   // Verify smart-contract
+  /*
   try {
     await hre.run('verify:verify', {
       address: addOnlyAppWhitelistRegistryAddress,
@@ -68,6 +69,7 @@ async function main() {
   } catch (e) {
     console.log('Proxy verification for DataProtectorSharingContract may have failed :', e);
   }
+  */
 }
 
 main().catch(error => {

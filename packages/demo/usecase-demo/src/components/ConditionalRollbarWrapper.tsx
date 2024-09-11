@@ -9,7 +9,8 @@ export function ConditionalRollbarWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  // const isRollbarActive = true;
+  const isRollbarActive = true;
+  /*
   const isRollbarActive =
     import.meta.env.MODE === 'production' &&
     !!import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN;
@@ -18,6 +19,13 @@ export function ConditionalRollbarWrapper({
     accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
     environment: import.meta.env.MODE,
   };
+  */
+  
+  const rollbarConfig = {
+    accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
+    environment: 'production',
+  };
+  
 
   return isRollbarActive ? (
     <RollbarProvider config={rollbarConfig}>

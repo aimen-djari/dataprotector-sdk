@@ -8,14 +8,7 @@ export const bellecour = {
     symbol: 'xRLC',
   },
   rpcUrls: {
-    public: { http: ['https://bellecour.iex.ec'] },
-    default: { http: ['https://bellecour.iex.ec'] },
-  },
-  blockExplorers: {
-    etherscan: {
-      name: 'Blockscout',
-      url: 'https://blockscout-bellecour.iex.ec',
-    },
-    default: { name: 'Blockscout', url: 'https://blockscout-bellecour.iex.ec' },
+    public: { http: ['http://20.185.225.192:8545'] },
+    default: { http: ['http://20.185.225.192:8545'] },
   },
 };

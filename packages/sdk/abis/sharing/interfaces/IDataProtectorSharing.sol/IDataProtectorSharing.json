@@ -29,7 +29,7 @@
         "type": "uint48"
       }
     ],
-    "name": "DurationInvalid",
+    "name": "DurationInvalide",
     "type": "error"
   },
   {
@@ -79,9 +79,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -107,9 +107,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ISubscription.SubscriptionParams",
@@ -407,9 +407,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "indexed": false,
@@ -444,9 +444,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "indexed": false,
@@ -507,12 +507,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "dealId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "protectedData",
         "type": "address"
@@ -525,6 +519,25 @@
       }
     ],
     "name": "ProtectedDataConsumed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "dealId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "protectedData",
+        "type": "address"
+      }
+    ],
+    "name": "ProtectedDataHosted",
     "type": "event"
   },
   {
@@ -692,6 +705,86 @@
         "internalType": "address",
         "name": "_protectedData",
         "type": "address"
+      }
+    ],
+    "name": "consumeProtectedData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "createCollection",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_collectionTokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_subscriberAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getCollectionSubscriber",
+    "outputs": [
+      {
+        "internalType": "uint48",
+        "name": "",
+        "type": "uint48"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_protectedData",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_renterAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getProtectedDataRenter",
+    "outputs": [
+      {
+        "internalType": "uint48",
+        "name": "",
+        "type": "uint48"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_protectedData",
+        "type": "address"
       },
       {
         "components": [
@@ -761,7 +854,7 @@
         "type": "address"
       }
     ],
-    "name": "consumeProtectedData",
+    "name": "hostProtectedData",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -770,73 +863,6 @@
       }
     ],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "createCollection",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_collectionTokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_subscriberAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getCollectionSubscriber",
-    "outputs": [
-      {
-        "internalType": "uint48",
-        "name": "",
-        "type": "uint48"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_protectedData",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_renterAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getProtectedDataRenter",
-    "outputs": [
-      {
-        "internalType": "uint48",
-        "name": "",
-        "type": "uint48"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -940,9 +966,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -994,9 +1020,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -1037,9 +1063,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ISubscription.SubscriptionParams",
@@ -1067,9 +1093,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ISubscription.SubscriptionParams",

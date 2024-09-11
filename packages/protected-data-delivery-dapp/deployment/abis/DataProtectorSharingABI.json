@@ -82,7 +82,7 @@
         "type": "uint48"
       }
     ],
-    "name": "DurationInvalid",
+    "name": "DurationInvalide",
     "type": "error"
   },
   {
@@ -245,9 +245,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -273,9 +273,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ISubscription.SubscriptionParams",
@@ -641,9 +641,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "indexed": false,
@@ -678,9 +678,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "indexed": false,
@@ -741,12 +741,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "dealId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "protectedData",
         "type": "address"
@@ -759,6 +753,25 @@
       }
     ],
     "name": "ProtectedDataConsumed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "dealId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "protectedData",
+        "type": "address"
+      }
+    ],
+    "name": "ProtectedDataHosted",
     "type": "event"
   },
   {
@@ -1124,9 +1137,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ISubscription.SubscriptionParams",
@@ -1143,83 +1156,10 @@
         "internalType": "address",
         "name": "_protectedData",
         "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "workerpool",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "workerpoolprice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "volume",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "tag",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "category",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "trust",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "apprestrict",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "datasetrestrict",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "requesterrestrict",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "salt",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes",
-            "name": "sign",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct IexecLibOrders_v5.WorkerpoolOrder",
-        "name": "_workerpoolOrder",
-        "type": "tuple"
-      },
-      {
-        "internalType": "address",
-        "name": "_app",
-        "type": "address"
       }
     ],
     "name": "consumeProtectedData",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "dealid",
-        "type": "bytes32"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -1390,6 +1330,92 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_protectedData",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "workerpool",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "workerpoolprice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "volume",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tag",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "category",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "trust",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "apprestrict",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "datasetrestrict",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "requesterrestrict",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "salt",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "sign",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct IexecLibOrders_v5.WorkerpoolOrder",
+        "name": "_workerpoolOrder",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "_app",
+        "type": "address"
+      }
+    ],
+    "name": "hostProtectedData",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "dealid",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "initialize",
     "outputs": [],
@@ -1543,9 +1569,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -1692,9 +1718,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -1833,9 +1859,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct IRental.RentingParams",
@@ -1876,9 +1902,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ISubscription.SubscriptionParams",
@@ -1906,9 +1932,9 @@
             "type": "uint72"
           },
           {
-            "internalType": "uint40",
+            "internalType": "uint48",
             "name": "duration",
-            "type": "uint40"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ISubscription.SubscriptionParams",
